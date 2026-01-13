@@ -14,7 +14,20 @@ app.use(express.json());
 
 app.use(
   cors({
-    origin: ["http://localhost:5174","http://localhost:5173"],
+    origin: [
+      // Local development
+      "http://localhost:5174",
+      "http://localhost:5173",
+      "http://localhost:3000",
+      
+      // Deployed domains
+      "https://project-vip-frontend.vercel.app",
+      "https://project-vip-backend.vercel.app",
+      
+      // Allow any subdomain variations
+      "https://www.project-vip-frontend.vercel.app",
+      "https://www.project-vip-backend.vercel.app"
+    ],
     credentials: true,
     methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization"],
