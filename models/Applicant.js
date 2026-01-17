@@ -16,5 +16,13 @@ export default mongoose.model(
     experience: String,
     education: String,
     resume: String, // URL to resume PDF
+    // New educational fields
+    tenthPercentage: Number,
+    twelfthPercentage: Number,
+    collegeName: String,
+    schoolName: String,
+    cgpa: Number,
+    degree: String,
+    documents: String, // Base64 encoded PDF documents
   }, { timestamps: true })
 );

@@ -36,6 +36,22 @@ export const createOrUpdateCompanyProfile = async (req, res) => {
 export const getCompanyProfile = async (req, res) => {
   try {
     const profile = await Company.findOne({ userId: req.user.id });
+    
+    // If no profile exists, return a basic profile structure
+    if (!profile) {
+      return res.json({
+        userId: req.user.id,
+        name: "",
+        companyName: "",
+        description: "",
+        industry: "",
+        website: "",
+        location: "",
+        logo: "",
+        role: ""
+      });
+    }
+    
     res.json(profile);
   } catch (err) {
     res
@@ -131,7 +147,16 @@ export const getApplicantsByJob = async (req, res) => {
               education: applicantProfile.education,
               bio: applicantProfile.bio,
               phone: applicantProfile.phone,
-              location: applicantProfile.location
+              location: applicantProfile.location,
+              photo: applicantProfile.photo,
+              // New educational fields
+              tenthPercentage: applicantProfile.tenthPercentage,
+              twelfthPercentage: applicantProfile.twelfthPercentage,
+              collegeName: applicantProfile.collegeName,
+              schoolName: applicantProfile.schoolName,
+              cgpa: applicantProfile.cgpa,
+              degree: applicantProfile.degree,
+              documents: applicantProfile.documents
             } : {}
           };
         } catch (profileErr) {

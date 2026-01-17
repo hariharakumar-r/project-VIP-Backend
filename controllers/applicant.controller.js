@@ -6,31 +6,70 @@ import User from "../models/User.js";
 
 export const createOrUpdateProfile = async (req, res) => {
   try {
-    const { name, picture, phone, location, bio, photo, skills, experience, education } = req.body;
+    const { 
+      name, 
+      picture, 
+      phone, 
+      location, 
+      bio, 
+      photo, 
+      skills, 
+      experience, 
+      education,
+      // New educational fields
+      tenthPercentage,
+      twelfthPercentage,
+      collegeName,
+      schoolName,
+      cgpa,
+      degree,
+      documents,
+      resume
+    } = req.body;
 
     // Update user info (name and picture)
     if (name || picture) {
       await User.findByIdAndUpdate(req.user.id, { name, picture });
     }
 
-    // Update applicant profile (including photo)
+    // Prepare update data with proper handling of empty values
+    const updateData = { 
+      userId: req.user.id, 
+      phone: phone || null, 
+      location: location || null, 
+      bio: bio || null, 
+      photo: photo || null, // Store photo in applicant profile
+      skills: skills || [], 
+      experience: experience || null, 
+      education: education || null,
+      // New educational fields - handle empty strings and convert to proper types
+      tenthPercentage: tenthPercentage && tenthPercentage !== "" ? parseFloat(tenthPercentage) : null,
+      twelfthPercentage: twelfthPercentage && twelfthPercentage !== "" ? parseFloat(twelfthPercentage) : null,
+      collegeName: collegeName || null,
+      schoolName: schoolName || null,
+      cgpa: cgpa && cgpa !== "" ? parseFloat(cgpa) : null,
+      degree: degree || null,
+      documents: documents || null,
+      resume: resume || null
+    };
+
+    // Remove undefined values to prevent overwriting existing data with undefined
+    Object.keys(updateData).forEach(key => {
+      if (updateData[key] === undefined) {
+        delete updateData[key];
+      }
+    });
+
+    // Update applicant profile (including photo and new educational fields)
     const profile = await Applicant.findOneAndUpdate(
       { userId: req.user.id },
-      { 
-        userId: req.user.id, 
-        phone, 
-        location, 
-        bio, 
-        photo, // Store photo in applicant profile
-        skills, 
-        experience, 
-        education 
-      },
+      updateData,
       { upsert: true, new: true }
     );
 
     res.json(profile);
   } catch (err) {
+    console.error("Profile update error:", err);
     res
       .status(500)
       .json({ message: "Failed to create/update profile", error: err.message });
@@ -53,6 +92,7 @@ export const getProfile = async (req, res) => {
 
     res.json(profile);
   } catch (err) {
+    console.error("Get profile error:", err);
     res.status(500).json({ message: "Failed to get profile", error: err.message });
   }
 };
@@ -94,7 +134,15 @@ export const myApplications = async (req, res) => {
   try {
     const apps = await Application.find({
       applicantId: req.user.id,
-    }).populate("jobId");
+    })
+    .populate({
+      path: "jobId",
+      populate: {
+        path: "companyId",
+        select: "name companyName"
+      }
+    })
+    .sort({ createdAt: -1 }); // Sort by newest first
 
     res.json(apps);
   } catch (err) {
@@ -173,5 +221,45 @@ export const deletePhoto = async (req, res) => {
     res.json({ message: "Photo deleted successfully", profile });
   } catch (err) {
     res.status(500).json({ message: "Failed to delete photo", error: err.message });
+  }
+};
+
+export const uploadDocuments = async (req, res) => {
+  try {
+    const { documents } = req.body;
+
+    if (!documents) {
+      return res.status(400).json({ message: "No documents provided" });
+    }
+
+    // Validate that documents is a base64 PDF string
+    if (!documents.startsWith("data:application/pdf")) {
+      return res.status(400).json({ message: "Invalid document format. Only PDF files are allowed." });
+    }
+
+    // Update applicant profile with documents
+    const profile = await Applicant.findOneAndUpdate(
+      { userId: req.user.id },
+      { documents },
+      { upsert: true, new: true }
+    );
+
+    res.json({ message: "Documents uploaded successfully", profile });
+  } catch (err) {
+    res.status(500).json({ message: "Failed to upload documents", error: err.message });
+  }
+};
+
+export const deleteDocuments = async (req, res) => {
+  try {
+    const profile = await Applicant.findOneAndUpdate(
+      { userId: req.user.id },
+      { documents: null },
+      { new: true }
+    );
+
+    res.json({ message: "Documents deleted successfully", profile });
+  } catch (err) {
+    res.status(500).json({ message: "Failed to delete documents", error: err.message });
   }
 };

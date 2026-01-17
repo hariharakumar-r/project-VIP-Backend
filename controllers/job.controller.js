@@ -11,7 +11,13 @@ export const createJob = async (req, res) => {
 
 export const getJobs = async (req, res) => {
   try {
-    const jobs = await Job.find({ status: "ACTIVE" })
+    const jobs = await Job.find({ 
+      status: "ACTIVE",
+      moderationStatus: "approved",
+      isBlockedByAdmin: { $ne: true }
+    })
+      .populate("companyId", "name companyName email logo description industry website location")
+      .populate("createdBy", "name email")
       .sort({ promoted: -1, createdAt: -1 }); // Promoted jobs first, then by creation date
     res.json(jobs);
   } catch (err) {

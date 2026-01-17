@@ -9,7 +9,9 @@ export default (req, res, next) => {
   const token = authHeader.slice("Bearer ".length);
 
   try {
-    req.user = jwt.verify(token, process.env.JWT_SECRET);
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    req.user = decoded;
+    req.userId = decoded.id; // Add this line to fix the issue
     next();
   } catch (err) {
     console.error("JWT error:", err);

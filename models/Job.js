@@ -14,6 +14,7 @@ export default mongoose.model(
       promoted: { type: Boolean, default: false },
       status: { type: String, default: "ACTIVE" },
       moderationStatus: { type: String, enum: ["pending", "approved", "rejected"], default: "approved" },
+      isBlockedByAdmin: { type: Boolean, default: false },
       createdBy: { type: mongoose.Schema.Types.ObjectId, ref: "User" }
     },
     { timestamps: true }

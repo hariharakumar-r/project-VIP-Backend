@@ -91,5 +91,3 @@ app.use("/api/webhook", (await import("./routes/webhook.routes.js")).default);
 app.listen(process.env.PORT || 3000, () =>
   console.log(`🚀 API is running on http://localhost:${process.env.PORT || 3000}`)
 );
-
-

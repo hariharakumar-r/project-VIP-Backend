@@ -2,6 +2,8 @@ import express from "express";
 import auth from "../middlewares/auth.js";
 import role from "../middlewares/role.js";
 import {
+  // Dashboard
+  getDashboardStats,
   // Profile
   getProfile,
   updateProfile,
@@ -23,6 +25,10 @@ import {
   // Posts Moderation
   moderatePost,
   getPendingPosts,
+  getAllPosts,
+  blockPost,
+  unblockPost,
+  deletePost,
   // Company Routes
   myPosts,
   // Promotion Requests
@@ -32,6 +38,9 @@ import {
 } from "../controllers/admin.controller.js";
 
 const router = express.Router();
+
+// Dashboard Routes
+router.get("/dashboard-stats", auth, role(["SUPER_ADMIN"]), getDashboardStats);
 
 // Profile Routes
 router.get("/profile", auth, role(["SUPER_ADMIN"]), getProfile);
@@ -56,11 +65,15 @@ router.patch("/unblock-user/:id", auth, role(["SUPER_ADMIN"]), unblockUser);
 
 // Posts Moderation Routes
 router.get("/pending-posts", auth, role(["SUPER_ADMIN"]), getPendingPosts);
+router.get("/all-posts", auth, role(["SUPER_ADMIN"]), getAllPosts);
 router.patch("/moderate-post", auth, role(["SUPER_ADMIN"]), moderatePost);
+router.patch("/block-post/:postId", auth, role(["SUPER_ADMIN"]), blockPost);
+router.patch("/unblock-post/:postId", auth, role(["SUPER_ADMIN"]), unblockPost);
+router.delete("/delete-post/:postId", auth, role(["SUPER_ADMIN"]), deletePost);
 
 // Promotion Request Routes
 router.post("/promo-request", auth, submitPromotionRequest);
-router.get("/promo-requests", auth, role(["SUPER_ADMIN"]), getPromotionRequests);
+router.get("/promotion-requests", auth, role(["SUPER_ADMIN"]), getPromotionRequests);
 router.patch("/promo-request/:requestId", auth, role(["SUPER_ADMIN"]), updatePromotionRequest);
 
 router.get("/my-posts", auth, role(["SUPER_ADMIN"]), myPosts);

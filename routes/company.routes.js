@@ -1,6 +1,7 @@
 import express from "express";
 import auth from "../middlewares/auth.js";
 import role from "../middlewares/role.js";
+import checkBlocked from "../middlewares/checkBlocked.js";
 import {
   createOrUpdateCompanyProfile,
   getCompanyProfile,
@@ -27,24 +28,22 @@ router.get("/view/:userId", auth, getCompanyProfileById);
 // Company-only routes
 router.use(auth, role(["COMPANY"]));
 
-router.post("/profile", createOrUpdateCompanyProfile);
+// Read-only routes (allowed for blocked users)
 router.get("/profile", getCompanyProfile);
-router.delete("/profile", deleteCompanyProfile);
-
-// User profile info routes
 router.get("/user-info", getUserProfileInfo);
-router.patch("/user-phone", updateUserPhone);
-
-// Job CRUD routes
-router.post("/job", createJobPost);
 router.get("/job/:jobId", getJobPostById);
-router.put("/job/:jobId", updateJobPost);
-router.delete("/job/:jobId", deleteJobPost);
 router.get("/my-posts", getMyPosts);
-
 router.get("/applicants/:jobId", getApplicantsByJob);
-router.patch("/application/:applicationId/status", updateApplicationStatus);
-router.post("/application/:applicationId/interview", scheduleInterview);
-router.patch("/job/:jobId/promote", promoteJobPost);
+
+// Write routes (blocked users cannot access)
+router.post("/profile", checkBlocked, createOrUpdateCompanyProfile);
+router.delete("/profile", checkBlocked, deleteCompanyProfile);
+router.patch("/user-phone", checkBlocked, updateUserPhone);
+router.post("/job", checkBlocked, createJobPost);
+router.put("/job/:jobId", checkBlocked, updateJobPost);
+router.delete("/job/:jobId", checkBlocked, deleteJobPost);
+router.patch("/application/:applicationId/status", checkBlocked, updateApplicationStatus);
+router.post("/application/:applicationId/interview", checkBlocked, scheduleInterview);
+router.patch("/job/:jobId/promote", checkBlocked, promoteJobPost);
 
 export default router;

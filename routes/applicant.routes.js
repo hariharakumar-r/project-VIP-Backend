@@ -1,6 +1,7 @@
 import express from "express";
 import auth from "../middlewares/auth.js";
 import role from "../middlewares/role.js";
+import checkBlocked from "../middlewares/checkBlocked.js";
 import {
   createOrUpdateProfile,
   getProfile,
@@ -12,25 +13,28 @@ import {
   saveResume,
   getResume,
   getCompanies,
+  uploadDocuments,
+  deleteDocuments,
 } from "../controllers/applicant.controller.js";
 
 const router = express.Router();
 
 router.use(auth, role(["APPLICANT"]));
 
-router.post("/profile", createOrUpdateProfile);
+// Read-only routes (allowed for blocked users)
 router.get("/profile", getProfile);
-router.delete("/profile", deleteProfile);
-
-router.post("/photo", uploadPhoto);
-router.delete("/photo", deletePhoto);
-
-router.post("/apply", applyJob);
 router.get("/applications", myApplications);
-
-router.post("/resume", saveResume);
 router.get("/resume", getResume);
-
 router.get("/companies", getCompanies);
+
+// Write routes (blocked users cannot access)
+router.post("/profile", checkBlocked, createOrUpdateProfile);
+router.delete("/profile", checkBlocked, deleteProfile);
+router.post("/photo", checkBlocked, uploadPhoto);
+router.delete("/photo", checkBlocked, deletePhoto);
+router.post("/documents", checkBlocked, uploadDocuments);
+router.delete("/documents", checkBlocked, deleteDocuments);
+router.post("/apply", checkBlocked, applyJob);
+router.post("/resume", checkBlocked, saveResume);
 
 export default router;
